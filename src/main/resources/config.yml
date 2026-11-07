@@ -1,10 +1,10 @@
 # Tab list player name format
-# Supported variables are %name%, %displayname%, and %ping%
-format: '%name% &7[&a%ping%ms&7]'
-format-afk: '%name% &7[&a%ping%ms&7] &eAFK'
+# Supported variables are %name%, %displayname%, %ping%, %prefix% (or %teamprefix%), and %suffix% (or %teamsuffix%)
+format: '%prefix%%name%%suffix% &7[&a%ping%ms&7]'
+format-afk: '%prefix%%name%%suffix% &7[&a%ping%ms&7] &eAFK'
 
 # Enable header/foot display
-# Supported variables are %name%, %displayname%, %tps%, %mspt%, %load%, and %world%
+# Supported variables are %name%, %displayname%, %tps%, %mspt%, %load%, %world%, %prefix%, and %suffix%
 # Spigot does not support %tps%, %mspt%, or %load%
 enable-tps: false
 format-header: ''

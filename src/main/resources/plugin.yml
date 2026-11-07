@@ -3,7 +3,7 @@ main: com.bobcat00.tablistping.TabListPing
 version: '${project.version}'
 author: Bobcat00
 api-version: '1.18'
-softdepend: [Essentials]
+softdepend: [Essentials, Geyser-Spigot, floodgate, PlaceholderAPI]
 commands:
   tablistping:
     description: TabListPing commands

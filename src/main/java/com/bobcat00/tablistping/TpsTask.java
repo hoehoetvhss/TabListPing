@@ -17,11 +17,12 @@
 package com.bobcat00.tablistping;
 
 import java.text.DecimalFormat;
-
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import io.papermc.lib.PaperLib;
 
 // This class primarily handles updating the tab list header and footer,
@@ -31,18 +32,18 @@ import io.papermc.lib.PaperLib;
 public class TpsTask extends BukkitRunnable
 {
     private TabListPing plugin;
-    
+
     // These variables have to be kept around for when a player changes worlds
     private String header = "";
     private String footer = "";
-    
+
     public TpsTask(TabListPing plugin)
     {
         this.plugin = plugin;
     }
-    
+
     // -------------------------------------------------------------------------
-    
+
     // This task is run periodically
     @Override
     public void run()
@@ -50,7 +51,7 @@ public class TpsTask extends BukkitRunnable
         String tpsString;
         String msptString;
         String loadString;
-        
+
         if (PaperLib.isPaper())
         {
             // Calculate TPS, MSPT, and load for Paper
@@ -60,13 +61,13 @@ public class TpsTask extends BukkitRunnable
             final DecimalFormat df1 = new DecimalFormat("0.0");
 
             // Colors for the numeric values
-            final String tpsColor  = (tps  >= 18.0 ? ChatColor.GREEN.toString() : tps  >= 15.0 ? ChatColor.YELLOW.toString() : ChatColor.RED.toString());
-            final String msptColor = (mspt >= 50.0 ? ChatColor.RED.toString()   : mspt >= 40.0 ? ChatColor.YELLOW.toString() : ChatColor.GREEN.toString());
+            final String tpsColor = (tps >= 18.0 ? ChatColor.GREEN.toString() : tps >= 15.0 ? ChatColor.YELLOW.toString() : ChatColor.RED.toString());
+            final String msptColor = (mspt >= 50.0 ? ChatColor.RED.toString() : mspt >= 40.0 ? ChatColor.YELLOW.toString() : ChatColor.GREEN.toString());
 
             // Build the replacement strings including the color tags
-            tpsString  = tpsColor  + df1.format(tps);
+            tpsString = tpsColor + df1.format(tps);
             msptString = msptColor + df1.format(mspt);
-            loadString = msptColor + df1.format(mspt*2.0);
+            loadString = msptColor + df1.format(mspt * 2.0);
         }
         else
         {
@@ -75,54 +76,80 @@ public class TpsTask extends BukkitRunnable
             msptString = "";
             loadString = "";
         }
-        
+
         // Create the strings with the non-player-specific variables replaced
         // These are reused if a player changes worlds
         header = plugin.config.getFormatHeader();
-        header = header.replace("%tps%", tpsString).
-                        replace("%mspt%", msptString).
-                        replace("%load%", loadString);
-        
+        header = header.replace("%tps%", tpsString)
+                       .replace("%mspt%", msptString)
+                       .replace("%load%", loadString);
+
         footer = plugin.config.getFormatFooter();
-        footer = footer.replace("%tps%", tpsString).
-                        replace("%mspt%", msptString).
-                        replace("%load%", loadString);
-        
+        footer = footer.replace("%tps%", tpsString)
+                       .replace("%mspt%", msptString)
+                       .replace("%load%", loadString);
+
         // Finish up by replacing the player-specific variables
         for (Player p : plugin.getServer().getOnlinePlayers())
         {
             setHeaderFooter(p);
         }
     }
-    
+
     // -------------------------------------------------------------------------
-    
+
     // Set this player's header and footer. This uses the previously created
     // header and footer strings, and replaces the player's variables.
-    
+
     void setHeaderFooter(Player player)
     {
+        String teamPrefix = "";
+        String teamSuffix = "";
+
+        Scoreboard scoreboard = player.getScoreboard();
+        Team team = scoreboard.getEntryTeam(player.getName());
+        if (team == null && Bukkit.getScoreboardManager() != null)
+        {
+            Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+            team = mainScoreboard.getEntryTeam(player.getName());
+        }
+
+        if (team != null)
+        {
+            teamPrefix = team.getPrefix();
+            teamSuffix = team.getSuffix();
+        }
+
         if (player.hasPermission("tablistping.header"))
         {
-            player.setPlayerListHeader(ChatColor.translateAlternateColorCodes('&',
-                       header.replace("%name%",        player.getName()).
-                              replace("%displayname%", player.getDisplayName()).
-                              replace("%world%",       player.getWorld().getName())));
+            String h = header.replace("%name%", player.getName())
+                             .replace("%displayname%", player.getDisplayName())
+                             .replace("%world%", player.getWorld().getName())
+                             .replace("%teamprefix%", teamPrefix)
+                             .replace("%prefix%", teamPrefix)
+                             .replace("%teamsuffix%", teamSuffix)
+                             .replace("%suffix%", teamSuffix);
+            player.setPlayerListHeader(ChatColor.translateAlternateColorCodes('&', h));
         }
+
         if (player.hasPermission("tablistping.footer"))
         {
-            player.setPlayerListFooter(ChatColor.translateAlternateColorCodes('&',
-                       footer.replace("%name%",        player.getName()).
-                              replace("%displayname%", player.getDisplayName()).
-                              replace("%world%",       player.getWorld().getName())));
+            String f = footer.replace("%name%", player.getName())
+                             .replace("%displayname%", player.getDisplayName())
+                             .replace("%world%", player.getWorld().getName())
+                             .replace("%teamprefix%", teamPrefix)
+                             .replace("%prefix%", teamPrefix)
+                             .replace("%teamsuffix%", teamSuffix)
+                             .replace("%suffix%", teamSuffix);
+            player.setPlayerListFooter(ChatColor.translateAlternateColorCodes('&', f));
         }
     }
-    
+
     // -------------------------------------------------------------------------
-    
+
     // Clear all headers and footers for all players that have the required
     // permissions.
-    
+
     void clearAllHeadersFooters()
     {
         for (Player player : plugin.getServer().getOnlinePlayers())
