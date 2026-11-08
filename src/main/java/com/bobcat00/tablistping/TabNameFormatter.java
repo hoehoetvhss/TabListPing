@@ -24,7 +24,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 // This class formats player tab names with placeholders for name, display name,
-// ping time, scoreboard team prefix/suffix, and PlaceholderAPI (if present).
+// ping time, scoreboard team prefix/color/suffix, and PlaceholderAPI (if present).
 
 public final class TabNameFormatter
 {
@@ -75,9 +75,10 @@ public final class TabNameFormatter
             return "";
         }
 
-        // Fetch Scoreboard Team prefix and suffix
+        // Fetch Scoreboard Team prefix, suffix, and color
         String teamPrefix = "";
         String teamSuffix = "";
+        String teamColor = "";
 
         Scoreboard scoreboard = player.getScoreboard();
         Team team = scoreboard.getEntryTeam(player.getName());
@@ -91,15 +92,34 @@ public final class TabNameFormatter
         {
             teamPrefix = team.getPrefix();
             teamSuffix = team.getSuffix();
+            try
+            {
+                ChatColor color = team.getColor();
+                if (color != null && color != ChatColor.RESET)
+                {
+                    teamColor = color.toString();
+                }
+            }
+            catch (Throwable ignored)
+            {
+            }
         }
+
+        // Apply team color to player name by default if not explicitly specified via %color% or %teamcolor%
+        boolean hasExplicitColor = template.contains("%color%") || template.contains("%teamcolor%");
+        String formattedName = (!hasExplicitColor && !teamColor.isEmpty())
+                ? (teamColor + player.getName())
+                : player.getName();
 
         // Replace built-in placeholders
         String result = template
                 .replace("%teamprefix%", teamPrefix)
                 .replace("%prefix%", teamPrefix)
+                .replace("%teamcolor%", teamColor)
+                .replace("%color%", teamColor)
                 .replace("%teamsuffix%", teamSuffix)
                 .replace("%suffix%", teamSuffix)
-                .replace("%name%", player.getName())
+                .replace("%name%", formattedName)
                 .replace("%displayname%", player.getDisplayName())
                 .replace("%ping%", String.valueOf(ping));
 

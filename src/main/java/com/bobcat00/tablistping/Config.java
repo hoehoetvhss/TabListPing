@@ -68,7 +68,7 @@ public class Config
     {
         if (!plugin.getConfig().contains("format", true))
         {
-            plugin.getConfig().set("format", "%prefix%%name%%suffix% &7[&a%ping%ms&7]");
+            plugin.getConfig().set("format", "%prefix%%color%%name%%suffix% &7[&a%ping%ms&7]");
         }
 
         if (!plugin.getConfig().contains("format-afk", true))
@@ -99,11 +99,11 @@ public class Config
         plugin.getConfig().options().setHeader(null); // Remove old header
 
         plugin.getConfig().setComments("format", Arrays.asList("Tab list player name format",
-                "Supported variables are %name%, %displayname%, %ping%, %prefix% (or %teamprefix%), and %suffix% (or %teamsuffix%)"));
+                "Supported variables are %name%, %displayname%, %ping%, %prefix% (or %teamprefix%), %color% (or %teamcolor%), and %suffix% (or %teamsuffix%)"));
 
         plugin.getConfig().setComments("enable-tps", Arrays.asList(null, // Blank line
                 "Enable header/footer display",
-                "Supported variables are %name%, %displayname%, %tps%, %mspt%, %load%, %world%, %prefix%, and %suffix%",
+                "Supported variables are %name%, %displayname%, %tps%, %mspt%, %load%, %world%, %prefix%, %color%, and %suffix%",
                 "Spigot does not support %tps%, %mspt%, or %load%"));
 
         plugin.getConfig().setComments("enable-metrics", Arrays.asList(null, // Blank line

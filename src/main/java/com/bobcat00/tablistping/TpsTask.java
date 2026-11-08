@@ -103,8 +103,10 @@ public class TpsTask extends BukkitRunnable
 
     void setHeaderFooter(Player player)
     {
+        // Fetch Scoreboard Team prefix, suffix, and color
         String teamPrefix = "";
         String teamSuffix = "";
+        String teamColor = "";
 
         Scoreboard scoreboard = player.getScoreboard();
         Team team = scoreboard.getEntryTeam(player.getName());
@@ -118,15 +120,32 @@ public class TpsTask extends BukkitRunnable
         {
             teamPrefix = team.getPrefix();
             teamSuffix = team.getSuffix();
+            try
+            {
+                ChatColor color = team.getColor();
+                if (color != null && color != ChatColor.RESET)
+                {
+                    teamColor = color.toString();
+                }
+            }
+            catch (Throwable ignored)
+            {
+            }
         }
 
         if (player.hasPermission("tablistping.header"))
         {
-            String h = header.replace("%name%", player.getName())
+            boolean hasExplicitColor = header.contains("%color%") || header.contains("%teamcolor%");
+            String formattedName = (!hasExplicitColor && !teamColor.isEmpty())
+                    ? (teamColor + player.getName())
+                    : player.getName();
+            String h = header.replace("%name%", formattedName)
                              .replace("%displayname%", player.getDisplayName())
                              .replace("%world%", player.getWorld().getName())
                              .replace("%teamprefix%", teamPrefix)
                              .replace("%prefix%", teamPrefix)
+                             .replace("%teamcolor%", teamColor)
+                             .replace("%color%", teamColor)
                              .replace("%teamsuffix%", teamSuffix)
                              .replace("%suffix%", teamSuffix);
             player.setPlayerListHeader(ChatColor.translateAlternateColorCodes('&', h));
@@ -134,11 +153,17 @@ public class TpsTask extends BukkitRunnable
 
         if (player.hasPermission("tablistping.footer"))
         {
-            String f = footer.replace("%name%", player.getName())
+            boolean hasExplicitColor = footer.contains("%color%") || footer.contains("%teamcolor%");
+            String formattedName = (!hasExplicitColor && !teamColor.isEmpty())
+                    ? (teamColor + player.getName())
+                    : player.getName();
+            String f = footer.replace("%name%", formattedName)
                              .replace("%displayname%", player.getDisplayName())
                              .replace("%world%", player.getWorld().getName())
                              .replace("%teamprefix%", teamPrefix)
                              .replace("%prefix%", teamPrefix)
+                             .replace("%teamcolor%", teamColor)
+                             .replace("%color%", teamColor)
                              .replace("%teamsuffix%", teamSuffix)
                              .replace("%suffix%", teamSuffix);
             player.setPlayerListFooter(ChatColor.translateAlternateColorCodes('&', f));
